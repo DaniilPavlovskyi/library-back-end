@@ -1,4 +1,3 @@
-Overview:
 This Java backend library project utilizes MySQL, Spring, Hibernate, Spring Security, REST APIs, Mockito, JUnit, Lombok, and JWT for managing book inventory securely and efficiently.
 
 Key Features:
