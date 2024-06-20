@@ -16,6 +16,6 @@ public class BookDTO {
     private String category;
     private String author;
     private int publicationYear;
-    private boolean availability;
+    private boolean available;
 
 }

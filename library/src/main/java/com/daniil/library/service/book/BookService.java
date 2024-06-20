@@ -9,6 +9,9 @@ import org.springframework.data.domain.Page;
 public interface BookService {
 
     BookDTO findById(int id);
+
+    Book findObjectById(int id);
+
     Page<Book> findAll(int page, int size);
 
     void save(Book book);

@@ -2,6 +2,7 @@ package com.daniil.library.controller;
 
 
 import com.daniil.library.dto.BookDTO;
+import com.daniil.library.dto.LoanRequestDTO;
 import com.daniil.library.entity.Author;
 import com.daniil.library.entity.Book;
 import com.daniil.library.entity.Client;
@@ -12,6 +13,7 @@ import com.daniil.library.service.book.BookService;
 import com.daniil.library.service.client.ClientService;
 import com.daniil.library.service.loan.LoanService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,7 @@ import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "${link:http://localhost:3000}")
+@AllArgsConstructor
 public class BookRESTController {
 
     private final BookService bookService;
@@ -32,14 +35,6 @@ public class BookRESTController {
     private final ClientService clientService;
     private final LoanService loanService;
     private final JwtUtil jwtUtil;
-
-    public BookRESTController(BookService bookService, AuthorService authorService, ClientService clientService, LoanService loanService, JwtUtil jwtUtil) {
-        this.bookService = bookService;
-        this.authorService = authorService;
-        this.clientService = clientService;
-        this.loanService = loanService;
-        this.jwtUtil = jwtUtil;
-    }
 
 
     @GetMapping("api/books")
@@ -67,16 +62,10 @@ public class BookRESTController {
     }
 
     @GetMapping("/api/author/{id}")
-    public ResponseEntity<Author> getAuthor(@PathVariable String id) {
-        Author author;
-        try {
-            int authorId = Integer.parseInt(id);
-            author = authorService.findById(authorId);
-            if (author == null) {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(null);
+    public ResponseEntity<Author> getAuthor(@PathVariable int id) {
+        Author author = authorService.findById(id);
+        if (author == null) {
+            return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(author);
     }
@@ -118,13 +107,9 @@ public class BookRESTController {
         String category = bookDTO.getCategory();
         String authorName = bookDTO.getAuthor();
         int publicationYear = bookDTO.getPublicationYear();
-        boolean availability = bookDTO.isAvailability();
+        boolean availability = bookDTO.isAvailable();
 
-        if (!StringUtils.hasText(title) || !StringUtils.hasText(category)) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        if (publicationYear < 1) {
+        if (!StringUtils.hasText(title) || !StringUtils.hasText(category) || publicationYear < 1) {
             return ResponseEntity.badRequest().build();
         }
 
@@ -144,50 +129,39 @@ public class BookRESTController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-//    @PostMapping("/api/new-loan/{id}")
-//    public ResponseEntity<Void> createLoan(
-//            @PathVariable String id,
-//            @RequestBody Map<String, String> date,
-//            HttpServletRequest request
-//    ) {
-//        Loan loan = new Loan();
-//        String bearerToken = request.getHeader("Authorization");
-//        Client client = clientService.findByUsername(jwtUtil.extractUsername(bearerToken.substring(7)));
-//        Book book;
-//
-//        try {
-//            int bookId = Integer.parseInt(id);
-//            book = bookService.findById(bookId);
-//
-//            if (book == null) {
-//                return ResponseEntity.badRequest().build();
-//            }
-//
-//            if (!book.isPresent()) {
-//                return ResponseEntity.badRequest().build();
-//            }
-//
-//            LocalDate loanDate = LocalDate.parse(date.get("date"));
-//
-//            loan.setBook(book);
-//            loan.setStart(LocalDate.now());
-//            loan.setEnd(loanDate);
-//            loan.setClient(client);
-//            loan.setStatus("started");
-//
-//            book.addLoan(loan);
-//            book.setPresent(false);
-//            client.addLoan(loan);
-//
-//            loanService.save(loan);
-//            clientService.save(client);
-//            bookService.save(book);
-//
-//        } catch (Exception e) {
-//            return ResponseEntity.badRequest().build();
-//        }
-//        return new ResponseEntity<>(HttpStatus.CREATED);
-//    }
+    @PostMapping("/api/new-loan")
+    public ResponseEntity<Void> createLoan(
+            @RequestBody LoanRequestDTO loanRequestDTO,
+            HttpServletRequest request
+    ) {
+        String bearerToken = request.getHeader("Authorization");
+        Client client = clientService.findByUsername(jwtUtil.extractUsername(bearerToken.substring(7)));
+
+        Book book = bookService.findObjectById(loanRequestDTO.getBookId());
+        if (book == null || !book.isPresent()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        if (loanRequestDTO.getDate().isBefore(LocalDate.now())) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Loan loan = new Loan();
+        loan.setBook(book);
+        loan.setStart(LocalDate.now());
+        loan.setEnd(loanRequestDTO.getDate());
+        loan.setClient(client);
+        loan.setStatus("started");
+
+        book.addLoan(loan);
+        book.setPresent(false);
+        client.addLoan(loan);
+
+        loanService.save(loan);
+        clientService.save(client);
+        bookService.save(book);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
 
 
 }

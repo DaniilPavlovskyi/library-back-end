@@ -1,17 +1,18 @@
 package com.daniil.library.entity;
 
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "users")
 @Getter @Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Client {
 
     @Id
@@ -37,6 +38,7 @@ public class Client {
     private LocalDate registrationDate;
 
     @OneToMany(mappedBy = "client")
+    @EqualsAndHashCode.Exclude
     private List<Loan> loans;
 
     @ManyToMany

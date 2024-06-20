@@ -14,6 +14,7 @@ import java.util.List;
 @Table(name = "book")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @Getter @Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Book {
 
     @Id
@@ -38,6 +39,7 @@ public class Book {
     private boolean isPresent;
 
     @OneToMany(mappedBy = "book")
+    @EqualsAndHashCode.Exclude
     private List<Loan> loans;
 
     public void addLoan(Loan loan){
