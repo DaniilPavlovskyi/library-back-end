@@ -27,7 +27,7 @@ public class BookServiceImpl implements BookService {
         bookDTO.setId(id);
         bookDTO.setTitle(book.getTitle());
         bookDTO.setCategory(book.getCategory());
-        bookDTO.setAvailable(bookDTO.isAvailable());
+        bookDTO.setAvailable(book.isPresent());
         bookDTO.setPublicationYear(book.getPublicationYear());
         return bookDTO;
     }

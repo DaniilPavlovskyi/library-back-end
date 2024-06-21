@@ -36,7 +36,6 @@ class BookRESTControllerTest {
 
     @InjectMocks
     private BookRESTController bookRESTController;
-
     @Mock
     private BookService bookService;
     @Mock

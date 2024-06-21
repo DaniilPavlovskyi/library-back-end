@@ -15,8 +15,8 @@ public class AuthorityServiceImpl implements AuthorityService {
 
 
     @Override
-    public Authority findByName(String authority) {
-        return authorityDAO.findByAuthority(authority);
+    public Authority findByName(String name) {
+        return authorityDAO.findByAuthority(name);
     }
 
     @Override
